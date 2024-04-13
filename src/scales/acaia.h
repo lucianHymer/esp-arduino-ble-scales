@@ -52,7 +52,7 @@ private:
   void sendNotificationRequest();
   void sendId();
   void notifyCallback(NimBLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_t* pData, size_t length, bool isNotify);
-  void decodeAndHandleNotification(uint8_t* pData, size_t length);
+  bool decodeAndHandleNotification();
   void handleScaleEventPayload(const uint8_t* pData, size_t length);
   void handleScaleStatusPayload(const uint8_t* pData, size_t length);
   float decodeWeight(const uint8_t* weightPayload);

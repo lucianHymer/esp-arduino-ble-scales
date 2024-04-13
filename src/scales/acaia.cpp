@@ -118,20 +118,23 @@ void AcaiaScales::notifyCallback(
   size_t length,
   bool isNotify
 ) {
-  decodeAndHandleNotification(pData, length);
+  dataBuffer.insert(dataBuffer.end(), pData, pData + length);
+  bool result = true;
+  while (result) {
+    result = decodeAndHandleNotification();
+  }
 }
 
-void AcaiaScales::decodeAndHandleNotification(uint8_t* newData, size_t newDataLength) {
-  dataBuffer.insert(dataBuffer.end(), newData, newData + newDataLength);
+bool AcaiaScales::decodeAndHandleNotification() {
   cleanupJunkData(dataBuffer);
 
   if (dataBuffer.size() < MIN_MESSAGE_LENGTH) {
-    return;
+    return false;
   }
 
   size_t messageLength = HEADER_LENGTH + dataBuffer[3] + CHECKSUM_LENGTH;
   if (messageLength > dataBuffer.size()) {
-    return;
+    return false;
   }
 
   uint8_t* payload = dataBuffer.data() + HEADER_LENGTH;
@@ -144,7 +147,7 @@ void AcaiaScales::decodeAndHandleNotification(uint8_t* newData, size_t newDataLe
       dataBuffer[messageLength - 2], dataBuffer[messageLength - 1]
     );
     dataBuffer.erase(dataBuffer.begin(), dataBuffer.begin() + messageLength);
-    return;
+    return false;
   }
 
   AcaiaMessageType messageType = static_cast<AcaiaMessageType>(dataBuffer[2]);
@@ -166,6 +169,7 @@ void AcaiaScales::decodeAndHandleNotification(uint8_t* newData, size_t newDataLe
 
   //Remove processed data packet from the buffer.
   dataBuffer.erase(dataBuffer.begin(), dataBuffer.begin() + messageLength);
+  return dataBuffer.size() >= MIN_MESSAGE_LENGTH;
 }
 
 void AcaiaScales::handleScaleEventPayload(const uint8_t* payload, size_t length) {
