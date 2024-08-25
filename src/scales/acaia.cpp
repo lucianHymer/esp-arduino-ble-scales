@@ -33,12 +33,15 @@ enum class AcaiaEventKey : uint8_t {
 };
 
 const size_t HEADER_LENGTH = 3;
-const size_t CHECKSUM_LENGTH = 2; 
+const size_t CHECKSUM_LENGTH = 2;
 const size_t MIN_MESSAGE_LENGTH = HEADER_LENGTH + CHECKSUM_LENGTH + 1;
 
 const NimBLEUUID serviceUUID("49535343-fe7d-4ae5-8fa9-9fafd205e455");
 const NimBLEUUID weightCharacteristicUUID("49535343-1e4d-4bd9-ba61-23c647249616");
 const NimBLEUUID commandCharacteristicUUID("49535343-8841-43f4-a8d4-ecbe34729bb3");
+
+const NimBLEUUID oldServiceUUID("00001820-0000-1000-8000-00805f9b34fb");
+const NimBLEUUID oldCharacteristicUUID("00002a80-0000-1000-8000-00805f9b34fb");
 
 //-----------------------------------------------------------------------------------/
 //---------------------------        PUBLIC       -----------------------------------/
@@ -264,15 +267,27 @@ float AcaiaScales::decodeTime(const uint8_t* timePayload) {
 bool AcaiaScales::performConnectionHandshake() {
   RemoteScales::log("Performing handshake\n");
 
-  service = RemoteScales::clientGetService(serviceUUID);
-  if (service == nullptr) {
+  if (RemoteScales::clientGetService(oldServiceUUID)) {
+    service = RemoteScales::clientGetService(oldServiceUUID);
+  }
+  else if (RemoteScales::clientGetService(serviceUUID)) {
+    service = RemoteScales::clientGetService(serviceUUID);
+  }
+  else {
     clientCleanup();
     return false;
   }
   RemoteScales::log("Got Service\n");
 
-  weightCharacteristic = service->getCharacteristic(weightCharacteristicUUID);
-  commandCharacteristic = service->getCharacteristic(commandCharacteristicUUID);
+  if (service->getCharacteristic(oldCharacteristicUUID)) {
+    weightCharacteristic = service->getCharacteristic(oldCharacteristicUUID);
+    commandCharacteristic = service->getCharacteristic(oldCharacteristicUUID);
+  }
+  else {
+    weightCharacteristic = service->getCharacteristic(weightCharacteristicUUID);
+    commandCharacteristic = service->getCharacteristic(commandCharacteristicUUID);
+  }
+
   if (weightCharacteristic == nullptr || commandCharacteristic == nullptr) {
     clientCleanup();
     return false;

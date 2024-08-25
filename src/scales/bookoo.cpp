@@ -142,11 +142,13 @@ bool BookooScales::performConnectionHandshake() {
   RemoteScales::log("Performing handshake\n");
 
   service = RemoteScales::clientGetService(serviceUUID);
-  if (service == nullptr) {
+  if (service != nullptr) {
+    RemoteScales::log("Got Service\n");
+  }
+  else {
     clientCleanup();
     return false;
   }
-  RemoteScales::log("Got Service\n");
 
   weightCharacteristic = service->getCharacteristic(weightCharacteristicUUID);
   commandCharacteristic = service->getCharacteristic(commandCharacteristicUUID);
