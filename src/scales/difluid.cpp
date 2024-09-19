@@ -8,8 +8,8 @@ https://github.com/DiFluid/difluid-sdk-demo/blob/master/docs/protocolMicrobalanc
 const size_t RECEIVE_PROTOCOL_LENGTH = 20;
 
 const NimBLEUUID serviceUUID("00DD");
-const NimBLEUUID weightCharacteristicUUID("FF11");
-const NimBLEUUID commandCharacteristicUUID("1800");
+const NimBLEUUID weightCharacteristicUUID("AA01");
+const NimBLEUUID commandCharacteristicUUID("DFDF");
 
 //-----------------------------------------------------------------------------------/
 //---------------------------        PUBLIC       -----------------------------------/
@@ -61,7 +61,7 @@ void DifluidScales::update() {
 bool DifluidScales::tare() {
   if (!isConnected()) return false;
   RemoteScales::log("Tare sent");
-  uint8_t payload[7] = { 0xDF, 0xDF, 0x03, 0x01, 0x01, 0x00, 0xC3};
+  uint8_t payload[7] = {0xdf, 0xdf, 0x03, 0x02, 0x01, 0x01, 0xc5};
   sendMessage(DifluidMessageType::SYSTEM, payload, sizeof(payload));
 
   return true;
@@ -167,7 +167,7 @@ bool DifluidScales::performConnectionHandshake() {
   NimBLERemoteDescriptor* notifyDescriptor = weightCharacteristic->getDescriptor(NimBLEUUID((uint16_t)0x2902));
   RemoteScales::log("Got notifyDescriptor\n");
   if (notifyDescriptor != nullptr) {
-    uint8_t value[2] = { 0x00, 0x01 };
+    uint8_t value[2] = { 0xdf, 0xdf };
     notifyDescriptor->writeValue(value, 2, true);
   }
   else {
@@ -182,8 +182,8 @@ bool DifluidScales::performConnectionHandshake() {
 }
 
 void DifluidScales::sendNotificationRequest() {
-  uint8_t payload[] = { 0, 0, 0, 0, 0, 0 };
-  sendEvent(payload, 6);
+  uint8_t payload[] = {0xdf, 0xdf, 0x01, 0x00, 0x01, 0x01, 0xc1};
+  sendEvent(payload, 7);
   RemoteScales::log("Sent event.\n");
 }
 

@@ -2,20 +2,12 @@
 #pragma once
 #include "remote_scales.h"
 #include "remote_scales_plugin_registry.h"
-#include <Arduino.h>
-#include <NimBLEDevice.h>
-#include <NimBLEUtils.h>
-#include <NimBLEScan.h>
-#include <vector>
-#include <memory>
-
 // Extended DifluidMessageType Enum
 enum class DifluidMessageType : uint8_t {
     SYSTEM = 0x0A,       // System messages like status or control
     WEIGHT = 0x0B,       // Weight measurement messages
     SENSOR = 0x0C,       // Custom message type for sensor data
-    CALIBRATION = 0x0D,  // Custom message type for calibration
-    HEARTBEAT = 0x0E     // Custom message type for heartbeat
+    CALIBRATION = 0x0D, // Custom message type for calibration
 };
 
 class DifluidScales : public RemoteScales {

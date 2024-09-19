@@ -1,56 +1,45 @@
-#include <NimBLEDevice.h>
+#include "remote_scales_plugin_registry.h"
 #include "scales/difluid.h"
+#include "remote_scales.h"  // For DiscoveredDevice
 
-// Global instance for DifluidScales
-DifluidScales *scales = nullptr;
-NimBLEScan *pScan = nullptr;
+// Global variable for scales
+DifluidScales* devices = nullptr;
+RemoteScalesScanner scanner;
 
-// BLE scan result callback
-class MyAdvertisedDeviceCallbacks : public NimBLEAdvertisedDeviceCallbacks {
-    void onResult(NimBLEAdvertisedDevice *advertisedDevice) override {
-        Serial.print("Found BLE device: ");
-        Serial.println(advertisedDevice->toString().c_str());
-
-        // Create the DiscoveredDevice instance
-        DiscoveredDevice device(advertisedDevice);
-
-        // Directly attempt to connect to the Difluid device
-        Serial.println("Attempting to connect to Difluid device...");
-        scales = new DifluidScales(device);
-
-        if (scales->connect()) {
-            Serial.println("Successfully connected to Difluid scales.");
-        } else {
-            Serial.println("Failed to connect to Difluid scales.");
-            delete scales;
-            scales = nullptr;
-        }
-    }
-};
-
+// Function to scan and initialize the scales
 void setup() {
-    // Initialize Serial for debugging
-    Serial.begin(115200);
-    Serial.println("Starting Remote Scales...");
+	Serial.begin(115200);
+	// Initialize BLE
+	BLEDevice::init("");
+	Serial.println("BLE initialized");
 
-    // Initialize NimBLE device
-    NimBLEDevice::init("RemoteScales");
+	// Apply the DifluidScales plugin
+	DifluidScalesPlugin::apply();
 
-    // Set scan parameters
-    pScan = NimBLEDevice::getScan();
-    pScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
-    pScan->setActiveScan(true);
+	// Initialize and start asynchronous scanning
+	scanner.initializeAsyncScan();
+	Serial.println("Started scanning for devices.");
 
-    // Start scanning for devices
-    Serial.println("Starting BLE scan...");
-    pScan->start(30);
+	// Wait for a device to be discovered
+	while (scanner.getDiscoveredScales().empty()) {
+		delay(100);
+	}
+
+	// Get the first discovered device
+	std::vector<DiscoveredDevice> discoveredDevices = scanner.getDiscoveredScales();
+	DiscoveredDevice device = discoveredDevices.front();
+
+	// Initialize the scales with the discovered device
+	devices = new DifluidScales(device);
+    devices->connect();
+	Serial.println("Scales initialized successfully.");
 }
 
+// Loop function (can contain logic to handle updates, further processing, etc.)
 void loop() {
-    // Continuously update the scales if initialized
-    if (scales != nullptr) {
-        scales->update();
-    }
-
-    delay(1000);  // Adjust delay as needed
+	// Update the scales
+	if (devices != nullptr) {
+		devices->update();
+	}
+	delay(1000);
 }
