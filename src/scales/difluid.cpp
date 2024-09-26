@@ -1,13 +1,13 @@
-// difluid.cpp
 #include "difluid.h"
 #include "remote_scales_plugin_registry.h"
 
 /*
-Handle protocol according to the spec found at
-https://github.com/DiFluid/difluid-sdk-demo/blob/master/docs/protocolMicrobalance.md
+Handle protocol according to the provided specification.
 */
 
-const NimBLEUUID serviceUUID("00DD");
+// Update service UUIDs and characteristic UUID
+const NimBLEUUID tiserviceUUID("00DD");
+const NimBLEUUID mbserviceUUID("00EE");
 const NimBLEUUID weightCharacteristicUUID("AA01");
 
 //-----------------------------------------------------------------------------------/
@@ -16,19 +16,18 @@ const NimBLEUUID weightCharacteristicUUID("AA01");
 DifluidScales::DifluidScales(const DiscoveredDevice& device) : RemoteScales(device) {}
 
 bool DifluidScales::connect() {
-    if (RemoteScales::clientIsConnected()) {
-        RemoteScales::log("Already connected\n");
+    if (isConnected()) {
+        log("Already connected\n");
         return true;
     }
 
-    //RemoteScales::log("Connecting to %s[%s]\n", getDeviceName().c_str(), getDeviceAddress().c_str());
     if (!clientConnect()) {
-        RemoteScales::clientCleanup();
+        clientCleanup();
         return false;
     }
 
     if (!performConnectionHandshake()) {
-        RemoteScales::clientCleanup();
+        clientCleanup();
         return false;
     }
 
@@ -36,30 +35,30 @@ bool DifluidScales::connect() {
 }
 
 void DifluidScales::disconnect() {
-    RemoteScales::clientCleanup();
+    clientCleanup();
 }
 
 bool DifluidScales::isConnected() {
-    return RemoteScales::clientIsConnected();
+    return clientIsConnected();
 }
 
 void DifluidScales::update() {
     if (markedForReconnection) {
-        RemoteScales::log("Marked for disconnection. Will attempt to reconnect.\n");
-        RemoteScales::clientCleanup();
+        log("Marked for reconnection. Attempting to reconnect.\n");
+        clientCleanup();
         connect();
         markedForReconnection = false;
     } else {
         sendHeartbeat();
-        RemoteScales::log("Heartbeat sent.\n");
     }
 }
 
 // Tare function
 bool DifluidScales::tare() {
     if (!isConnected()) return false;
-    RemoteScales::log("Tare command sent.\n");
-    uint8_t tareCommand[] = {0xdf, 0xdf, 0x03, 0x02, 0x01, 0x01, 0xc5};
+    log("Tare command sent.\n");
+    uint8_t tareCommand[] = {0xDF, 0xDF, 0x03, 0x02, 0x01, 0x01, 0x00};
+    tareCommand[6] = calculateChecksum(tareCommand, sizeof(tareCommand));
     weightCharacteristic->writeValue(tareCommand, sizeof(tareCommand), true);
     return true;
 }
@@ -67,6 +66,16 @@ bool DifluidScales::tare() {
 //-----------------------------------------------------------------------------------/
 //---------------------------       PRIVATE       -----------------------------------/
 //-----------------------------------------------------------------------------------/
+
+int32_t DifluidScales::readInt32BE(const uint8_t* data) {
+    return (int32_t)(
+        ((uint32_t)data[0] << 24) |
+        ((uint32_t)data[1] << 16) |
+        ((uint32_t)data[2] << 8) |
+        (uint32_t)data[3]
+    );
+}
+
 void DifluidScales::notifyCallback(
     NimBLERemoteCharacteristic* pBLERemoteCharacteristic,
     uint8_t* pData,
@@ -74,75 +83,113 @@ void DifluidScales::notifyCallback(
     bool isNotify
 ) {
     // Use the log function from RemoteScales
-    RemoteScales::log("Notification received:\n");
+    log("Notification received:\n");
     for (size_t i = 0; i < length; i++) {
-        RemoteScales::log("%02X ", pData[i]);
+        log("%02X ", pData[i]);
     }
-    RemoteScales::log("\n");
+    log("\n");
 
-    // Parse the weight from the notification data
-    if (length >= 19 && pData[3] == 0) {
-        int32_t weight = (pData[5] << 24) | (pData[6] << 16) | (pData[7] << 8) | pData[8];
-        weight /= 10;  // Divide by 10 to convert to grams
-        RemoteScales::log("Weight: %d\n", weight);
-        setWeight(static_cast<float>(weight));
-    } else if (pData[0] == 0x02 && pData[1] == 0x00) {
-        // Handle heartbeat acknowledgment if necessary
-        RemoteScales::log("Heartbeat acknowledged.\n");
+    // Verify headers
+    if (length < 6 || pData[0] != 0xDF || pData[1] != 0xDF) {
+        log("Invalid data received.\n");
+        return;
+    }
+
+    // Verify checksum
+    uint8_t receivedChecksum = pData[length - 1];
+    uint8_t calculatedChecksum = calculateChecksum(pData, length);
+    if (receivedChecksum != calculatedChecksum) {
+        log("Checksum mismatch. Received: %02X, Calculated: %02X\n", receivedChecksum, calculatedChecksum);
+        return;
+    }
+
+    uint8_t func = pData[2];
+    uint8_t cmd = pData[3];
+    uint8_t dataLen = pData[4];
+
+    if (func == 0x03 && cmd == 0x00) { // Sensor Data
+        if (dataLen >= 13 && length >= 6 + dataLen) {
+            // Parse sensor data
+            int32_t weightRaw = readInt32BE(&pData[5]);
+            float weight = weightRaw / 10.0f; // Assuming weight unit is grams x10
+
+            // Handle other data fields if necessary
+            // ...
+
+            log("Weight: %.1f g\n", weight);
+
+            // Call weight updated callback
+            setWeight(weight);
+        } else {
+            log("Invalid sensor data length.\n");
+        }
+    } else if (func == 0x02 && cmd == 0x00) { // Heartbeat Acknowledgment
+        log("Heartbeat acknowledged.\n");
     } else {
-        RemoteScales::log("Unknown notification received.\n");
+        log("Unknown function (%02X) or command (%02X).\n", func, cmd);
     }
 }
 
-bool DifluidScales::performConnectionHandshake() {
-    RemoteScales::log("Performing handshake\n");
 
-    service = clientGetService(serviceUUID);
-    if (service != nullptr) {
-        RemoteScales::log("Service found.\n");
-    } else {
-        RemoteScales::log("Service not found.\n");
-        return false;
+bool DifluidScales::performConnectionHandshake() {
+    log("Performing handshake\n");
+
+    // Try to get the service using both UUIDs
+    service = clientGetService(mbserviceUUID);
+    if (service == nullptr) {
+        service = clientGetService(tiserviceUUID);
     }
 
-    weightCharacteristic = service->getCharacteristic(weightCharacteristicUUID);
-    if (weightCharacteristic != nullptr) {
-        RemoteScales::log("Characteristic found!\n");
+    if (service == nullptr) {
+        log("Service not found with UUIDs 00EE or 00DD.\n");
+        return false;
+    }
+    log("Service found.\n");
 
-        // Subscribe to notifications
+    weightCharacteristic = service->getCharacteristic(weightCharacteristicUUID);
+    if (weightCharacteristic == nullptr) {
+        log("Characteristic not found.\n");
+        return false;
+    }
+    log("Characteristic found.\n");
+
+    // Subscribe to notifications
+    if (weightCharacteristic->canNotify()) {
         weightCharacteristic->subscribe(true, [this](NimBLERemoteCharacteristic* characteristic, uint8_t* data, size_t length, bool isNotify) {
             notifyCallback(characteristic, data, length, isNotify);
         });
-
-        // Set the scale unit to grams
-        setUnitToGram();
-
-        // Enable auto notifications
-        enableAutoNotifications();
-
-        // Send a tare command after the connection
-        tare();
-
-        // Initialize heartbeat timer
-        lastHeartbeat = millis();
     } else {
-        RemoteScales::log("Characteristic not found.\n");
+        log("Cannot subscribe to notifications.\n");
         return false;
     }
+
+    // Set the scale unit to grams
+    setUnitToGram();
+
+    // Enable auto notifications
+    enableAutoNotifications();
+
+    // Send a tare command after the connection
+    tare();
+
+    // Initialize heartbeat timer
+    lastHeartbeat = millis();
 
     return true;
 }
 
 void DifluidScales::setUnitToGram() {
-    uint8_t unitToGramCommand[] = {0xdf, 0xdf, 0x01, 0x04, 0x01, 0x00, 0xc4};
+    uint8_t unitToGramCommand[] = {0xDF, 0xDF, 0x01, 0x04, 0x01, 0x00, 0x00}; // Last byte for checksum
+    unitToGramCommand[6] = calculateChecksum(unitToGramCommand, sizeof(unitToGramCommand));
     weightCharacteristic->writeValue(unitToGramCommand, sizeof(unitToGramCommand), true);
-    RemoteScales::log("Set unit to grams.\n");
+    log("Set unit to grams.\n");
 }
 
 void DifluidScales::enableAutoNotifications() {
-    uint8_t enableNotificationsCommand[] = {0xdf, 0xdf, 0x01, 0x00, 0x01, 0x01, 0xc1};
+    uint8_t enableNotificationsCommand[] = {0xDF, 0xDF, 0x01, 0x00, 0x01, 0x01, 0x00};
+    enableNotificationsCommand[6] = calculateChecksum(enableNotificationsCommand, sizeof(enableNotificationsCommand));
     weightCharacteristic->writeValue(enableNotificationsCommand, sizeof(enableNotificationsCommand), true);
-    RemoteScales::log("Enabled auto notifications.\n");
+    log("Enabled auto notifications.\n");
 }
 
 void DifluidScales::sendHeartbeat() {
@@ -155,7 +202,18 @@ void DifluidScales::sendHeartbeat() {
         return;
     }
 
-    uint8_t heartbeatCommand[] = {0xdf, 0xdf, 0x02, 0x00, 0x00, 0x00, 0xc2};
+    uint8_t heartbeatCommand[] = {0xDF, 0xDF, 0x02, 0x00, 0x00, 0x00};
+    heartbeatCommand[5] = calculateChecksum(heartbeatCommand, sizeof(heartbeatCommand));
     weightCharacteristic->writeValue(heartbeatCommand, sizeof(heartbeatCommand), true);
     lastHeartbeat = now;
+}
+
+// Calculate checksum according to the protocol
+uint8_t DifluidScales::calculateChecksum(const uint8_t* data, size_t length) {
+    uint16_t sum = 0;
+    // Sum all bytes except the checksum byte itself
+    for (size_t i = 0; i < length - 1; i++) {
+        sum += data[i];
+    }
+    return static_cast<uint8_t>(sum & 0xFF);
 }
