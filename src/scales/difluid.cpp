@@ -123,8 +123,9 @@ void DifluidScales::notifyCallback(
         } else {
             log("Invalid sensor data length.\n");
         }
-    } else if (func == 0x02 && cmd == 0x00) { // Heartbeat Acknowledgment
+    } else if (func == 0x03 && cmd == 0x05) { // Heartbeat Acknowledgment(Get Device Status)
         log("Heartbeat acknowledged.\n");
+        uint8_t battery_capacity = pData[6];  // Battery capacity percentage.
     } else {
         log("Unknown function (%02X) or command (%02X).\n", func, cmd);
     }
@@ -194,6 +195,7 @@ void DifluidScales::enableAutoNotifications() {
 
 void DifluidScales::sendHeartbeat() {
     if (!isConnected()) {
+        markedForReconnection=true;
         return;
     }
 
@@ -202,7 +204,7 @@ void DifluidScales::sendHeartbeat() {
         return;
     }
 
-    uint8_t heartbeatCommand[] = {0xDF, 0xDF, 0x02, 0x00, 0x00, 0x00};
+    uint8_t heartbeatCommand[] = {0xDF, 0xDF, 0x03, 0x05, 0x00, 0xC6};  // Use Func 0x03 and Cmd 0x05(Get Device Status) as the heartbeat.
     heartbeatCommand[5] = calculateChecksum(heartbeatCommand, sizeof(heartbeatCommand));
     weightCharacteristic->writeValue(heartbeatCommand, sizeof(heartbeatCommand), true);
     lastHeartbeat = now;
