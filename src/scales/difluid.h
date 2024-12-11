@@ -51,7 +51,7 @@ private:
         {
             return false;
         }
-        return deviceName.find("microbalance") == 0 || deviceName.find("Mb") == 0;
+        return deviceName.find("Microbalance") == 0 || deviceName.find("Mb") == 0;
     }
 
     static std::unique_ptr<RemoteScales> initialise(const DiscoveredDevice &device)
