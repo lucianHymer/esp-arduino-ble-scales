@@ -3,5 +3,3 @@
 .pio/
 src/.theia/
 src/build
-main.cpp
-platformio.ini
