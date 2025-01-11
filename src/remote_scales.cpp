@@ -91,7 +91,7 @@ void RemoteScalesScanner::initializeAsyncScan() {
   // We set the second parameter to true to prevent the library from storing BLEAdvertisedDevice objects
   // for devices we're not interested in. This is important because the library will otherwise run out of
   // memory after a while.
-  NimBLEDevice::getScan()->setAdvertisedDeviceCallbacks(this, true);
+  NimBLEDevice::getScan()->setScanCallbacks(this, true);
   NimBLEDevice::getScan()->setInterval(500);
   NimBLEDevice::getScan()->setWindow(100);
   NimBLEDevice::getScan()->setMaxResults(0);
