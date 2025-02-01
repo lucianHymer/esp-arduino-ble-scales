@@ -97,7 +97,7 @@ void RemoteScalesScanner::initializeAsyncScan() {
   NimBLEDevice::getScan()->setMaxResults(0);
   NimBLEDevice::getScan()->setDuplicateFilter(false);
   NimBLEDevice::getScan()->setActiveScan(false);
-  NimBLEDevice::getScan()->start(0, false, false); // Set to 0 for continuous
+  NimBLEDevice::getScan()->start(0); // Set to 0 for continuous
   isRunning = true;
 }
 
