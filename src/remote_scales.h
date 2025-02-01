@@ -59,8 +59,8 @@ private:
 
   NimBLEClient* client = nullptr;
   DiscoveredDevice device;
-  LogCallback logCallback;
-  WeightCallback weightCallback;
+  LogCallback logCallback = nullptr;
+  WeightCallback weightCallback = nullptr;
   bool weightCallbackOnlyChanges = false;
 };
 
