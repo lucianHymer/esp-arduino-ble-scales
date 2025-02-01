@@ -114,7 +114,7 @@ void RemoteScalesScanner::restartAsyncScan() {
   initializeAsyncScan();
 }
 
-void RemoteScalesScanner::onResult(NimBLEAdvertisedDevice* advertisedDevice) {
+void RemoteScalesScanner::onResult(const NimBLEAdvertisedDevice* advertisedDevice) {
   std::string addrStr(reinterpret_cast<const char*>(advertisedDevice->getAddress().getBase()), 6);
   if (alreadySeenAddresses.exists(addrStr)) {
     return;
