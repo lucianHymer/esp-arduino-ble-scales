@@ -111,7 +111,7 @@ void VariaScales::notifyCallback(NimBLERemoteCharacteristic* pRemoteCharacterist
     return;
   }
   if(data[0] != static_cast<uint8_t>(VariaMessageType::SYSTEM)) {
-    log("Only system tyep message notifications are supported: %s\n", byteArrayToHexString(data, length).c_str());
+    log("Only system type message notifications are supported: %s\n", byteArrayToHexString(data, length).c_str());
     return;
   }
 
