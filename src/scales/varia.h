@@ -1,7 +1,6 @@
 #pragma once
 #include "remote_scales.h"
 #include "remote_scales_plugin_registry.h"
-#include <Arduino.h>
 
 enum class VariaMessageType : uint8_t {
   SYSTEM = 0xFA,
@@ -25,9 +24,9 @@ public:
   bool tare() override;
 
 private:
-  NimBLERemoteService* service;
-  NimBLERemoteCharacteristic* weightCharacteristic;
-  NimBLERemoteCharacteristic* commandCharacteristic;
+  NimBLERemoteService* service = nullptr;
+  NimBLERemoteCharacteristic* weightCharacteristic = nullptr;
+  NimBLERemoteCharacteristic* commandCharacteristic = nullptr;
 
   int batteryPercent = 0;
   int timerSeconds = 0;

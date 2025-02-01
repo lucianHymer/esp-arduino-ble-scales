@@ -107,15 +107,13 @@ void VariaScales::sendMessage(VariaMessageType msgType, const uint8_t* payload, 
 
 void VariaScales::notifyCallback(NimBLERemoteCharacteristic* pRemoteCharacteristic, uint8_t* data, size_t length, bool isNotify) {
   if(length < 2) {
-    log("Notified message too short, expected at least 2 bytes, got: %s\n", byteArrayToHexString(data, length).c_str());
+    log("notifyCallback: message too short, expected at least 2 bytes, got: %s\n", byteArrayToHexString(data, length).c_str());
     return;
   }
   if(data[0] != static_cast<uint8_t>(VariaMessageType::SYSTEM)) {
-    log("Only system type message notifications are supported: %s\n", byteArrayToHexString(data, length).c_str());
+    log("notifyCallback: Only system type messages are supported: %s\n", byteArrayToHexString(data, length).c_str());
     return;
   }
-
-  // log("Debug message: %s\n", byteArrayToHexString(data, length).c_str());
 
   while(length > 0) {
     VariaMessageType messageType = static_cast<VariaMessageType>(data[1]);
