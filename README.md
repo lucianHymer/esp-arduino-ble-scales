@@ -12,6 +12,8 @@ This allows for easy extention of the library for more bluetooth enabled scales.
 * [Acaia Lunar](https://acaia.co/collections/coffee-scales/products/lunar_2021) - [Tested]
 * [Acaia Pearl](https://acaia.co/collections/coffee-scales/products/pearl) - [Tested]
 * [Bookoo Themis](https://bookoocoffee.com/shop/bookoo-mini-scale/?coupon=gaggiuino) - [Tested]
+* [Varia AKU](https://www.variabrewing.com/products/varia-aku-scale) - [Untested]
+* [Varia AKU Mini](https://www.variabrewing.com/products/varia-aku-mini-scale) - [Tested]
 
 *__There is a big possibility other acaia models work out of the box as well but thye have not ben tested!__*
 
