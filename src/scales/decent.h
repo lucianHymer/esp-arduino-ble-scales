@@ -6,7 +6,7 @@
 class DecentScales : public RemoteScales {
 
 public:
-  DecentScales(const DiscoveredDevice &device);
+  DecentScales(const DiscoveredDevice& device);
   virtual ~DecentScales(void);
 
   bool connect(void) override;
@@ -16,18 +16,18 @@ public:
   bool tare(void) override;
 
 private:
-  NimBLERemoteService *service;
-  NimBLERemoteCharacteristic *readCharacteristic;
-  NimBLERemoteCharacteristic *writeCharacteristic;
+  NimBLERemoteService* service;
+  NimBLERemoteCharacteristic* readCharacteristic;
+  NimBLERemoteCharacteristic* writeCharacteristic;
 
   bool markedForReconnection = false;
 
-  void readCallback(NimBLERemoteCharacteristic *pCharacteristic, uint8_t *pData,
-                    size_t length, bool isNotify);
+  void readCallback(NimBLERemoteCharacteristic* pCharacteristic, uint8_t* pData,
+    size_t length, bool isNotify);
 
   bool performConnectionHandshake(void);
-  void subscribeToNotifications(void);
-  void handleWeightNotification(uint8_t *pData, size_t length);
+  bool subscribeToNotifications(void);
+  void handleWeightNotification(uint8_t* pData, size_t length);
   bool verifyConnected(void);
 };
 
@@ -37,10 +37,10 @@ public:
     RemoteScalesPlugin plugin = RemoteScalesPlugin{
         .id = "plugin-decent",
         .handles =
-            [](const DiscoveredDevice &device) {
+            [](const DiscoveredDevice& device) {
               return DecentScalesPlugin::handles(device);
             },
-        .initialise = [](const DiscoveredDevice &device)
+        .initialise = [](const DiscoveredDevice& device)
             -> std::unique_ptr<RemoteScales> {
           return std::make_unique<DecentScales>(device);
         },
@@ -49,8 +49,8 @@ public:
   }
 
 private:
-  static bool handles(const DiscoveredDevice &device) {
-    const std::string &deviceName = device.getName();
+  static bool handles(const DiscoveredDevice& device) {
+    const std::string& deviceName = device.getName();
     return !deviceName.empty() && (deviceName.find("Decent Scale") == 0);
   }
 };
