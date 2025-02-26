@@ -114,7 +114,7 @@ bool DecentScales::subscribeToNotifications() {
 
 void DecentScales::readCallback(NimBLERemoteCharacteristic* pCharacteristic,
   uint8_t* pData, size_t length, bool isNotify) {
-  if ((length == 7 || length == 10) && pData[0] == 0x03 && pData[1] == 0xCE) {
+  if ((length == 7 || length == 10) && pData[0] == 0x03 && (pData[1] == 0xCA || pData[1] == 0xCE)) {
     handleWeightNotification(pData, length);
   }
   else {
