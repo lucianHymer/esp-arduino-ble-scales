@@ -8,15 +8,15 @@
 #include <vector>
 #include <memory>
 
-enum class BookooMessageType : uint8_t {
-  SYSTEM = 0x0A,
-  WEIGHT = 0x0B
+enum class TimemoreMessageType : uint8_t {
+  WEIGHT = 0x00,
+  TARE = 0x01,
 };
 
-class BookooScales : public RemoteScales {
+class TimemoreScales : public RemoteScales {
 
 public:
-  BookooScales(const DiscoveredDevice& device);
+  TimemoreScales(const DiscoveredDevice& device);
   void update() override;
   bool connect() override;
   void disconnect() override;
@@ -24,10 +24,6 @@ public:
   bool tare() override;
 
 private:
-  std::string weightUnits;
-  float time;
-  uint8_t battery;
-
   uint32_t lastHeartbeat = 0;
 
   bool markedForReconnection = false;
@@ -41,28 +37,26 @@ private:
   bool performConnectionHandshake();
   void subscribeToNotifications();
 
-  void sendMessage(BookooMessageType msgType, const uint8_t* payload, size_t length, bool waitResponse = false);
-  void sendEvent(const uint8_t* payload, size_t length);
+  void sendMessage(TimemoreMessageType msgType, const uint8_t* payload, size_t length, bool waitResponse = false);
   void sendHeartbeat();
   void sendNotificationRequest();
-  void sendId();
   void notifyCallback(NimBLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_t* pData, size_t length, bool isNotify);
   bool decodeAndHandleNotification();
 };
 
-class BookooScalesPlugin {
+class TimemoreScalesPlugin {
 public:
   static void apply() {
     RemoteScalesPlugin plugin = RemoteScalesPlugin{
-      .id = "plugin-bookoo",
-      .handles = [](const DiscoveredDevice& device) { return BookooScalesPlugin::handles(device); },
-      .initialise = [](const DiscoveredDevice& device) -> std::unique_ptr<RemoteScales> { return std::make_unique<BookooScales>(device); },
+      .id = "plugin-timemore",
+      .handles = [](const DiscoveredDevice& device) { return TimemoreScalesPlugin::handles(device); },
+      .initialise = [](const DiscoveredDevice& device) -> std::unique_ptr<RemoteScales> { return std::make_unique<TimemoreScales>(device); },
     };
     RemoteScalesPluginRegistry::getInstance()->registerPlugin(plugin);
   }
 private:
   static bool handles(const DiscoveredDevice& device) {
     const std::string& deviceName = device.getName();
-    return !deviceName.empty() && (deviceName.find("BOOKOO_SC") == 0);
+    return !deviceName.empty() && (deviceName.find("Timemore Scale") == 0);
   }
 };
