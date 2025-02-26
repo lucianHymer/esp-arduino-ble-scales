@@ -33,7 +33,11 @@ bool DecentScales::connect() {
   if (!performConnectionHandshake()) {
     return false;
   }
-  subscribeToNotifications();
+
+  if (!subscribeToNotifications()) {
+    return false;
+  }
+
   RemoteScales::setWeight(0.f);
   return true;
 }
@@ -86,7 +90,10 @@ bool DecentScales::performConnectionHandshake() {
     return false;
   }
   RemoteScales::log("Got readCharacteristic and writeCharacteristic\n");
+  return true;
+}
 
+bool DecentScales::subscribeToNotifications() {
   if (readCharacteristic->canNotify()) {
     auto callback = [this](NimBLERemoteCharacteristic* characteristic,
       uint8_t* data, size_t length, bool isNotify) {
