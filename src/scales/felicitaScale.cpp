@@ -106,9 +106,6 @@ void FelicitaScale::parseStatusUpdate(const uint8_t* data, size_t length) {
 }
 
 
-hi @Zer0-bit
-
-
 int32_t FelicitaScale::parseWeight(const uint8_t* data) {
   bool isNegative = (data[2] == 0x2D);
   int32_t weight = 0;
@@ -121,8 +118,6 @@ int32_t FelicitaScale::parseWeight(const uint8_t* data) {
   }
   return isNegative ? -weight : weight;
 }
-
-or
 
 int32_t FelicitaScale::parseWeight(const uint8_t* data) {
     
