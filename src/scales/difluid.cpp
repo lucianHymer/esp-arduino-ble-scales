@@ -30,7 +30,7 @@ bool DifluidScales::connect() {
         clientCleanup();
         return false;
     }
-
+    setWeight(0.f);
     return true;
 }
 
@@ -169,9 +169,6 @@ bool DifluidScales::performConnectionHandshake() {
 
     // Enable auto notifications
     enableAutoNotifications();
-
-    // Send a tare command after the connection
-    tare();
 
     // Initialize heartbeat timer
     lastHeartbeat = millis();
