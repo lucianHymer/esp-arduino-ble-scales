@@ -76,7 +76,7 @@ bool FelicitaScale::performConnectionHandshake() {
         log("Notifications not supported.\n");
         return false;
     }
-
+    
     return true;
 }
 bool FelicitaScale::verifyConnected() {
@@ -102,11 +102,20 @@ void FelicitaScale::notifyCallback(NimBLERemoteCharacteristic* characteristic, u
 void FelicitaScale::parseStatusUpdate(const uint8_t* data, size_t length) {
     float weight = static_cast<float>(parseWeight(data)) / 100.0f;
     setWeight(weight);
-    log("Weight updated: %.2f g\n", weight);
+    log("Weight updated: %.1f g\n", weight);
 }
 
 int32_t FelicitaScale::parseWeight(const uint8_t* data) {
-    return (data[3] << 24) | (data[4] << 16) | (data[5] << 8) | data[6];
+  bool isNegative = (data[2] == 0x2D);
+  int32_t weight = 0;
+  for (int i = 3; i <= 8; i++) {
+      if (data[i] < '0' || data[i] > '9') {
+          log("Invalid digit");
+          return 0;
+      }
+      weight = weight * 10 + (data[i] - '0');
+  }
+  return isNegative ? -weight : weight;
 }
 
 uint8_t FelicitaScale::calculateChecksum(const uint8_t* data, size_t length) {
