@@ -105,6 +105,10 @@ void FelicitaScale::parseStatusUpdate(const uint8_t* data, size_t length) {
     log("Weight updated: %.1f g\n", weight);
 }
 
+
+hi @Zer0-bit
+
+
 int32_t FelicitaScale::parseWeight(const uint8_t* data) {
   bool isNegative = (data[2] == 0x2D);
   int32_t weight = 0;
@@ -116,6 +120,29 @@ int32_t FelicitaScale::parseWeight(const uint8_t* data) {
       weight = weight * 10 + (data[i] - '0');
   }
   return isNegative ? -weight : weight;
+}
+
+or
+
+int32_t FelicitaScale::parseWeight(const uint8_t* data) {
+    
+    bool isNegative = (data[2] == 0x2D);
+    
+    if ((data[3] | data[4] | data[5] | data[6] | data[7] | data[8]) < '0' || 
+        (data[3] & data[4] & data[5] & data[6] & data[7] & data[8]) > '9') {
+        log("Invalid digit in weight data\n");
+        return 0;
+    }
+
+    // Direct digit expansion
+    return (isNegative ? -1 : 1) * (
+        (data[3] - '0') * 100000 +
+        (data[4] - '0') * 10000 +
+        (data[5] - '0') * 1000 +
+        (data[6] - '0') * 100 +
+        (data[7] - '0') * 10 +
+        (data[8] - '0')
+    );
 }
 
 uint8_t FelicitaScale::calculateChecksum(const uint8_t* data, size_t length) {
