@@ -23,7 +23,7 @@ private:
     bool performConnectionHandshake();
     void toggleUnit();
     void togglePrecision();
-    void sendHeartbeat();
+    bool verifyConnected(void);
     void parseStatusUpdate(const uint8_t* data, size_t length);
     uint8_t calculateChecksum(const uint8_t* data, size_t length);
     int32_t parseWeight(const uint8_t* data);

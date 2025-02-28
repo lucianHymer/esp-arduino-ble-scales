@@ -22,7 +22,7 @@ bool FelicitaScale::connect() {
         clientCleanup();
         return false;
     }
-
+    setWeight(0.f);
     return true;
 }
 
@@ -41,12 +41,12 @@ void FelicitaScale::update() {
         connect();
         markedForReconnection = false;
     } else {
-        sendHeartbeat();
+      verifyConnected();
     }
 }
 
 bool FelicitaScale::tare() {
-    if (!isConnected()) return false;
+    if (!verifyConnected()) return false;
     log("Tare command sent.\n");
     uint8_t tareCommand[] = {CMD_TARE};
     dataCharacteristic->writeValue(tareCommand, sizeof(tareCommand), true);
@@ -79,15 +79,15 @@ bool FelicitaScale::performConnectionHandshake() {
 
     return true;
 }
-
-void FelicitaScale::sendHeartbeat() {
-    if (!isConnected()) {
-        markedForReconnection = true;
-        return;
-    }
-
-    uint8_t heartbeatCommand[] = {0x00}; // Example: Replace with valid heartbeat command if needed
-    dataCharacteristic->writeValue(heartbeatCommand, sizeof(heartbeatCommand), true);
+bool FelicitaScale::verifyConnected() {
+  if (markedForReconnection) {
+    return false;
+  }
+  if (!isConnected()) {
+    markedForReconnection = true;
+    return false;
+  }
+  return true;
 }
 
 void FelicitaScale::notifyCallback(NimBLERemoteCharacteristic* characteristic, uint8_t* data, size_t length, bool isNotify) {
