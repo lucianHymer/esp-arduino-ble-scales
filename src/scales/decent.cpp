@@ -129,10 +129,10 @@ void DecentScales::handleWeightNotification(uint8_t* pData, size_t length) {
   uint8_t xorByte = pData[length - 1];
 
   if (xorByte != 0) {
-    uint8_t xorSum = 0;
+    uint8_t xorSum = pData[0];
 
-    for (int i = 0; i < length - 1; i++) {
-      xorSum = xorSum ^ pData[i];
+    for (int i = 1; i < length - 1; i++) {
+      xorSum ^= pData[i];
     }
 
     if (xorSum != xorByte) {
