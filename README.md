@@ -16,6 +16,7 @@ This allows for easy extention of the library for more bluetooth enabled scales.
 * [Difluid microbalance Ti](https://digitizefluid.com/collections/m-series/products/microbalance-ti) - [Tested]
 * [Eclair](https://makerworld.com/en/models/664430#profileId-591777) - [Tested]
 * [Timemore Black Mirror DUO](https://www.timemore.com/collections/coffee-scale/products/timemore-coffee-scale-black-mirror-duo) - [Tested]
+* [Felicita Arc] (http://www.felicitacoffee.com/PRODUCT_1/10.html)  - [Tested]
 
 Want a specific model? Implement it 🚀 Read on to find out how... 
 
