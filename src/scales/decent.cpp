@@ -67,7 +67,7 @@ bool DecentScales::tare() {
   if (!verifyConnected())
     return false;
   uint8_t payload[] = { 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x0C };
-  readCharacteristic->writeValue(payload, sizeof(payload), false);
+  writeCharacteristic->writeValue(payload, sizeof(payload), false);
   return true;
 };
 
