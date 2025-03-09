@@ -52,6 +52,6 @@ private:
     const std::string& deviceData = device.getManufacturerData();
     char *pHex = NimBLEUtils::buildHexData(nullptr, (uint8_t*) deviceData.c_str(), deviceData.length());
     std::string md(pHex);
-    return !md.empty() && (md.find("190000a6bc") != std::string::npos);
+    return !md.empty() && (md.find("0000a6bc") != std::string::npos);
   }
 };
