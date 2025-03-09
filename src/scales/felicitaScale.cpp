@@ -79,6 +79,7 @@ bool FelicitaScale::performConnectionHandshake() {
     
     return true;
 }
+
 bool FelicitaScale::verifyConnected() {
   if (markedForReconnection) {
     return false;
@@ -104,25 +105,6 @@ void FelicitaScale::parseStatusUpdate(const uint8_t* data, size_t length) {
     setWeight(weight);
     log("Weight updated: %.1f g\n", weight);
 }
-
-
-hi @Zer0-bit
-
-
-int32_t FelicitaScale::parseWeight(const uint8_t* data) {
-  bool isNegative = (data[2] == 0x2D);
-  int32_t weight = 0;
-  for (int i = 3; i <= 8; i++) {
-      if (data[i] < '0' || data[i] > '9') {
-          log("Invalid digit");
-          return 0;
-      }
-      weight = weight * 10 + (data[i] - '0');
-  }
-  return isNegative ? -weight : weight;
-}
-
-or
 
 int32_t FelicitaScale::parseWeight(const uint8_t* data) {
     
