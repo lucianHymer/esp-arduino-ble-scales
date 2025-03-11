@@ -73,7 +73,7 @@ private:
   LRUCache alreadySeenAddresses = LRUCache(100);
   std::vector<DiscoveredDevice> discoveredScales;
   void cleanupDiscoveredScales();
-  void onResult(const NimBLEAdvertisedDevice* advertisedDevice) override;
+  void onResult(NimBLEAdvertisedDevice* advertisedDevice) override;
 
 public:
   std::vector<DiscoveredDevice> getDiscoveredScales() { return discoveredScales; }
@@ -81,7 +81,7 @@ public:
   void initializeAsyncScan();
   void stopAsyncScan();
   void restartAsyncScan();
-  bool isScanRunning();
+  bool isScanRunning() const;
 };
 
 // ---------------------------------------------------------------------------------------

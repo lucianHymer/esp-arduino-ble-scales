@@ -114,13 +114,12 @@ void RemoteScalesScanner::restartAsyncScan() {
   initializeAsyncScan();
 }
 
-void RemoteScalesScanner::onResult(const NimBLEAdvertisedDevice* advertisedDevice) {
-  std::string addrStr(reinterpret_cast<const char*>(advertisedDevice->getAddress().getNative()), 6);
-  if (alreadySeenAddresses.exists(addrStr)) {
+void RemoteScalesScanner::onResult(NimBLEAdvertisedDevice* advertisedDevice) {
+  if (std::string addrStr(reinterpret_cast<const char*>(advertisedDevice->getAddress().getNative()), 6); alreadySeenAddresses.exists(addrStr)) {
     return;
   }
   if (RemoteScalesPluginRegistry::getInstance()->containsPluginForDevice(advertisedDevice)) {
-    discoveredScales.push_back(advertisedDevice);
+    discoveredScales.emplace_back(advertisedDevice);
   }
 }
 
@@ -128,7 +127,7 @@ void RemoteScalesScanner::cleanupDiscoveredScales() {
   discoveredScales.clear();
 }
 
-bool RemoteScalesScanner::isScanRunning() {
+bool RemoteScalesScanner::isScanRunning() const {
   return isRunning;
 }
 
