@@ -8,7 +8,7 @@
 
 class DiscoveredDevice {
 public:
-  DiscoveredDevice(const NimBLEAdvertisedDevice* device) : 
+  DiscoveredDevice(const NimBLEAdvertisedDevice* device) :
   name(device->getName()), address(device->getAddress()), manufacturerData(device->getManufacturerData()) {}
   const std::string& getName() const { return name; }
   const NimBLEAddress& getAddress() const { return address; }
@@ -47,7 +47,7 @@ protected:
   void clientCleanup();
   bool clientIsConnected();
   NimBLERemoteService* clientGetService(const NimBLEUUID uuid);
-  
+
   void setWeight(float newWeight);
   void log(std::string msgFormat, ...);
   std::string byteArrayToHexString(const uint8_t* byteArray, size_t length);
@@ -67,7 +67,7 @@ private:
 // ---------------------------------------------------------------------------------------
 // ---------------------------   RemoteScalesScanner    -----------------------------------
 // ---------------------------------------------------------------------------------------
-class RemoteScalesScanner : public NimBLEScanCallbacks {
+class RemoteScalesScanner : public NimBLEAdvertisedDeviceCallbacks {
 private:
   bool isRunning = false;
   LRUCache alreadySeenAddresses = LRUCache(100);

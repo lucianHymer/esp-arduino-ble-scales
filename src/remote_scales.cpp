@@ -9,7 +9,7 @@ RemoteScales::RemoteScales(const DiscoveredDevice& device) : device(device) {}
 
 void RemoteScales::log(std::string msgFormat, ...) {
   if (!this->logCallback) return;
-  
+
   va_list args;
   va_start(args, msgFormat);
   int length = vsnprintf(nullptr, 0, msgFormat.c_str(), args); // Find length of string
@@ -91,13 +91,13 @@ void RemoteScalesScanner::initializeAsyncScan() {
   // We set the second parameter to true to prevent the library from storing BLEAdvertisedDevice objects
   // for devices we're not interested in. This is important because the library will otherwise run out of
   // memory after a while.
-  NimBLEDevice::getScan()->setScanCallbacks(this, true);
+  NimBLEDevice::getScan()->setAdvertisedDeviceCallbacks(this, true);
   NimBLEDevice::getScan()->setInterval(500);
   NimBLEDevice::getScan()->setWindow(100);
   NimBLEDevice::getScan()->setMaxResults(0);
   NimBLEDevice::getScan()->setDuplicateFilter(false);
   NimBLEDevice::getScan()->setActiveScan(true);
-  NimBLEDevice::getScan()->start(0); // Set to 0 for continuous
+  NimBLEDevice::getScan()->start(0, nullptr, false); // Set to 0 for continuous
   isRunning = true;
 }
 
