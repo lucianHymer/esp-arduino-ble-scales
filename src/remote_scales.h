@@ -8,7 +8,7 @@
 
 class DiscoveredDevice {
 public:
-  DiscoveredDevice(const NimBLEAdvertisedDevice* device) :
+  DiscoveredDevice(NimBLEAdvertisedDevice* device) :
   name(device->getName()), address(device->getAddress()), manufacturerData(device->getManufacturerData()) {}
   const std::string& getName() const { return name; }
   const NimBLEAddress& getAddress() const { return address; }
