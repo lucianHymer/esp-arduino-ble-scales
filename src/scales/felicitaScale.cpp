@@ -79,7 +79,6 @@ bool FelicitaScale::performConnectionHandshake() {
     
     return true;
 }
-
 bool FelicitaScale::verifyConnected() {
   if (markedForReconnection) {
     return false;
