@@ -49,9 +49,13 @@ public:
   }
 private:
   static bool handles(const DiscoveredDevice& device) {
+    const std::string& deviceName = device.getName();
+    if (!deviceName.empty() && deviceName.find("CFS-9002") == 0) {
+      return true;
+    }
     const std::string& deviceData = device.getManufacturerData();
     char *pHex = NimBLEUtils::buildHexData(nullptr, (uint8_t*) deviceData.c_str(), deviceData.length());
     std::string md(pHex);
-    return !md.empty() && (md.find("0000a6bc") != std::string::npos);
+    return !md.empty() && deviceName.empty() && (md.find("0000a6bc") != std::string::npos || md.find("042") == 0);
   }
 };
