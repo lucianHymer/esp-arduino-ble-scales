@@ -149,9 +149,16 @@ bool AcaiaScales::decodeAndHandleNotification() {
     handleScaleStatusPayload(payload, payloadLength);
   }
   else if (messageType == AcaiaMessageType::INFO) {
-    RemoteScales::log("Got info message: %s\n", RemoteScales::byteArrayToHexString(dataBuffer.data(), messageLength).c_str());
-    // This normally means that something went wrong with the establishing a connection so we disconnect.
-    markedForReconnection = true;
+    std::string info_msg = RemoteScales::byteArrayToHexString(dataBuffer.data(), messageLength);
+    // For some reason, Acaia Pearl S sends this info message upon connection.
+    // Don't know what it means, but we can ignore it and it seems to work fine.
+    std::string ignore_msg = "EF DD 07 07 02 06 01 00 39 01 0E 3C ";
+    RemoteScales::log("Got info message: %s\n", info_msg.c_str());
+    if(info_msg.compare(ignore_msg) != 0){
+      // This normally means that something went wrong with the establishing a connection so we disconnect.
+      markedForReconnection = true;
+    }
+    
   }
   else {
     RemoteScales::log("Unknown message type %02X: %s\n", messageType, RemoteScales::byteArrayToHexString(dataBuffer.data(), messageLength).c_str());
