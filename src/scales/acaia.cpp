@@ -149,12 +149,14 @@ bool AcaiaScales::decodeAndHandleNotification() {
     handleScaleStatusPayload(payload, payloadLength);
   }
   else if (messageType == AcaiaMessageType::INFO) {
-    std::string info_msg = RemoteScales::byteArrayToHexString(dataBuffer.data(), messageLength);
+    RemoteScales::log("Got info message: %s\n", RemoteScales::byteArrayToHexString(dataBuffer.data(), messageLength).c_str());
+
     // For some reason, Acaia Pearl S sends this info message upon connection.
-    // Don't know what it means, but we can ignore it and it seems to work fine.
-    std::string ignore_msg = "EF DD 07 07 02 06 01 00 39 01 0E 3C ";
-    RemoteScales::log("Got info message: %s\n", info_msg.c_str());
-    if(info_msg.compare(ignore_msg) != 0){
+    // It can safely be ignored; otherwise, the scale will almost never successfully connect.
+    // "EF DD 07 07 02 06 01 00 39 01 0E 3C "
+    // This bug has only been confirmed with earlier model Pearl S and only one example unit.
+    // More data is required...
+    if(!RemoteScales::getDeviceName().find("PEARLS")){
       // This normally means that something went wrong with the establishing a connection so we disconnect.
       markedForReconnection = true;
     }
