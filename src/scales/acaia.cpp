@@ -153,10 +153,7 @@ bool AcaiaScales::decodeAndHandleNotification() {
 
     // For some reason, Acaia Pearl S sends this info message upon connection.
     // It can safely be ignored; otherwise, the scale will almost never successfully connect.
-    // "EF DD 07 07 02 06 01 00 39 01 0E 3C "
-    // This bug has only been confirmed with earlier model Pearl S and only one example unit.
-    // More data is required...
-    if(!RemoteScales::getDeviceName().find("PEARLS")){
+    if(RemoteScales::getDeviceName().find("PEARLS")==0){
       // This normally means that something went wrong with the establishing a connection so we disconnect.
       markedForReconnection = true;
     }
