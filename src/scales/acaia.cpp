@@ -153,7 +153,7 @@ bool AcaiaScales::decodeAndHandleNotification() {
 
     // For some reason, Acaia Pearl S sends this info message upon connection.
     // It can safely be ignored; otherwise, the scale will almost never successfully connect.
-    if(RemoteScales::getDeviceName().find("PEARLS")==0){
+    if(RemoteScales::getDeviceName().find("PEARLS")!=0){
       // This normally means that something went wrong with the establishing a connection so we disconnect.
       markedForReconnection = true;
     }
