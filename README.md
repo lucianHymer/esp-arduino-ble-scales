@@ -20,6 +20,7 @@ This allows for easy extention of the library for more bluetooth enabled scales.
 * [Felicita Arc](http://www.felicitacoffee.com/PRODUCT_1/10.html) - [Tested]
 * [Timemore Black Mirror DUO](https://www.timemore.com/collections/coffee-scale/products/timemore-coffee-scale-black-mirror-duo) - [Tested]
 * [Varia AKU /Mini](https://www.variabrewing.com/products/varia-aku-scale) - [Tested]
+* [Varia AKU Pro](https://www.variabrewing.com/collections/aku-new/products/varia-aku-pro)
 * [Eureka Precisa](https://www.eureka.co.it/de/accessory/id/187.aspx)
 
 Want a specific model? Implement it 🚀 Read on to find out how... 
