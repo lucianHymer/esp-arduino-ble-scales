@@ -57,7 +57,7 @@ private:
       (
         deviceName.find("AKU MINI SCALE") == 0 ||
         deviceName.find("VARIA AKU") == 0 ||
-        deviceName.find("Varia AKU")
+        deviceName.find("Varia AKU") == 0
       );
   }
 };
