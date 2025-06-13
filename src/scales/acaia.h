@@ -90,6 +90,7 @@ private:
       || deviceName.find("PYXIS") == 0
       || deviceName.find("LUNAR") == 0
       || deviceName.find("PEARL") == 0
-      || deviceName.find("PROCH") == 0);
+      || deviceName.find("PROCH") == 0
+      || deviceName.find("UMBRA") == 0);
   }
 };

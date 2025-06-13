@@ -43,6 +43,9 @@ const NimBLEUUID commandCharacteristicUUID("49535343-8841-43f4-a8d4-ecbe34729bb3
 const NimBLEUUID oldServiceUUID("00001820-0000-1000-8000-00805f9b34fb");
 const NimBLEUUID oldCharacteristicUUID("00002a80-0000-1000-8000-00805f9b34fb");
 
+// Acaia Umbra Lunar service UUID
+const NimBLEUUID umbraServiceUUID("0000fe50-cc7a-482a-984a-7f2ed5b3e58f");
+
 //-----------------------------------------------------------------------------------/
 //---------------------------        PUBLIC       -----------------------------------/
 //-----------------------------------------------------------------------------------/
@@ -151,9 +154,9 @@ bool AcaiaScales::decodeAndHandleNotification() {
   else if (messageType == AcaiaMessageType::INFO) {
     RemoteScales::log("Got info message: %s\n", RemoteScales::byteArrayToHexString(dataBuffer.data(), messageLength).c_str());
 
-    // For some reason, Acaia Pearl S sends this info message upon connection.
+    // For some reason, Acaia Pearl S and Umbra Lunar send this info message upon connection.
     // It can safely be ignored; otherwise, the scale will almost never successfully connect.
-    if(RemoteScales::getDeviceName().find("PEARLS")!=0){
+    if(RemoteScales::getDeviceName().find("PEARLS")!=0 && RemoteScales::getDeviceName().find("UMBRA")!=0){
       // This normally means that something went wrong with the establishing a connection so we disconnect.
       markedForReconnection = true;
     }
@@ -279,13 +282,25 @@ bool AcaiaScales::performConnectionHandshake() {
   else if (RemoteScales::clientGetService(serviceUUID)) {
     service = RemoteScales::clientGetService(serviceUUID);
   }
+  else if (RemoteScales::clientGetService(umbraServiceUUID)) {
+    service = RemoteScales::clientGetService(umbraServiceUUID);
+  }
   else {
     clientCleanup();
     return false;
   }
   RemoteScales::log("Got Service\n");
 
-  if (service->getCharacteristic(oldCharacteristicUUID)) {
+  // Check if we're using the Umbra service (it only has one characteristic)
+  if (service->getUUID().equals(umbraServiceUUID)) {
+    // Umbra uses a single characteristic at index 0 for both weight and command
+    std::vector<NimBLERemoteCharacteristic*>* characteristics = service->getCharacteristics(true);
+    if (characteristics != nullptr && characteristics->size() >= 1) {
+      weightCharacteristic = (*characteristics)[0];
+      commandCharacteristic = (*characteristics)[0];
+    }
+  }
+  else if (service->getCharacteristic(oldCharacteristicUUID)) {
     weightCharacteristic = service->getCharacteristic(oldCharacteristicUUID);
     commandCharacteristic = service->getCharacteristic(oldCharacteristicUUID);
   }
